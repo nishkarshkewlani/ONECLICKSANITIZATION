@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AI Wipe Wizard – Smart Device Sanitization</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner container">
+    <a class="brand" href="index.html">
+      <img src="assets/logo.png" alt="Logo" class="logo-img">
+      <div class="brand-text">
+        <span class="brand-title">AI‑Powered One Click Device Sanitization</span>
+        <span class="brand-sub">Secure wiping • AI analyzer • Verifiable certificates</span>
+      </div>
+    </a>
+    <nav class="nav">
+      <a class="active" href="ai-analysis.html">AI Analysis</a>
+      <a href="index.html">Home</a>
+      <a href="features.html">Features</a>
+      <a href="how.html">How it works</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="login.html">Log In</a>
+      <span id="logoutIcon" class="logout" title="Logout" style="display:none">🔓</span>
+    </nav>
+  </div>
+</header>
+
+<section class="section container ai-panel">
+  <h2 class="ai-heading"><span class="ai-icon">🧠</span> AI Wipe Wizard — Smart Device Sanitization</h2>
+  <button id="analyzeBtn" class="btn big-btn glow">🤖 Start AI Analysis</button>
+  <div class="progress"><div id="progressBar"></div></div>
+  <pre id="analysisLog" class="log"></pre>
+
+  <div id="analysisResults" class="analysis-results" style="display:none;">
+    <div class="col device-details glass">
+      <h3 class="grad-title">📱 AI Analyzer</h3>
+      <ul class="kv">
+        <li><strong>Device:</strong> Dell XPS 13 (9310)</li>
+        <li><strong>CPU:</strong> Intel i7‑1165G7</li>
+        <li><strong>RAM:</strong> 16 GB</li>
+        <li><strong>OS:</strong> Windows 11 Pro (23H2)</li>
+        <li><strong>Storage:</strong> 512 GB NVMe SSD</li>
+        <li><strong>Interfaces:</strong> NVMe/PCIe 3.0 x4, UEFI</li>
+        <li><strong>Wiping Scope:</strong> Full disk, HPA, DCO</li>
+      </ul>
+    </div>
+    <div class="col ai-recommendation glass">
+      <h3 class="grad-title">🤖 AI Recommendation</h3>
+      <ul class="kv">
+        <li><strong>Primary:</strong> Secure Erase (ATA/NVMe sanitize)</li>
+        <li><strong>Fallback:</strong> DoD 5220.22‑M (3‑pass)</li>
+        <li><strong>Verify:</strong> Post‑wipe random sampling + hash</li>
+        <li><strong>Risk Level:</strong> Low</li>
+        <li><strong>Ease:</strong> High (one‑click)</li>
+        <li><strong>Notes:</strong> SSD wear‑aware; clears HPA/DCO; firmware checks</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="certActions" class="cert-actions" style="display:none;">
+    <a class="btn outline" href="assets/wipe_package.zip" download>Download Wipe Package</a>
+    <a class="btn outline" href="assets/certificate.pdf" download>Download PDF Certificate</a>
+    <a class="btn outline" href="assets/certificate.json" download>Download JSON Proof</a>
+  </div>
+</section>
+<script src="js/ai.js"></script>
+<script src="js/common.js"></script>
+</body></html>

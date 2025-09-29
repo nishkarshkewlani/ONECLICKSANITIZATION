@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>: India’s Green E-Waste Revolution</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      grid-template-rows: auto 1fr;
+      grid-template-areas:
+        "header header header"
+        "left map right";
+      height: 100vh;
+      gap: 12px;
+      background: #ffffff; /* white background */
+    }
+    header {
+      grid-area: header;
+      background: #000000; /* blue gradient */
+      color: #ffffff;
+      padding: 20px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      border-radius: 0 0 20px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    #left-panel, #right-panel {
+      background: #ffffff;
+      padding: 14px;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #333333;
+    }
+    #left-panel { grid-area: left; }
+    #right-panel { grid-area: right; }
+    #map {
+      grid-area: map;
+      border-radius: 16px;
+      box-shadow: 0 5px 16px rgba(0,0,0,0.2);
+    }
+    /* Bouncing Pins */
+    .custom-pin div {
+      background: #3E79D5; /* default blue */
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: bold;
+      padding: 6px 9px;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      animation: bounce 2s infinite;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+    .custom-pin div:hover {
+      transform: scale(1.4);
+      background: #47969A; /* hover blue */
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    /* Charts */
+    canvas {
+      margin: 12px 0;
+      border-radius: 14px;
+      background: #ffffff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      transition: transform 0.35s ease, box-shadow 0.35s ease;
+      width: 100% !important;
+      height: 220px !important;
+    }
+    canvas:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 20px rgba(62,121,213,0.3);
+    }
+    /* Counter */
+    #counter {
+      margin-top: 12px;
+      font-size: 20px;
+      font-weight: 600;
+      color: #3E79D5;
+      text-align: center;
+    }
+  </style>
+<style>#fadeOverlay{position:fixed;inset:0;background:#fff;opacity:0;display:flex;align-items:center;justify-content:center;font-family:Poppins,Arial,sans-serif;font-size:2rem;color:#333;transition:opacity 1.6s;pointer-events:none;z-index:99999}#fadeOverlay.show{opacity:1}</style></head>
+<body>
+  <<header style="background-color:#000000; padding:10px 20px; border-radius:0 0 12px 12px; box-shadow:0 4px 8px rgba(0,0,0,0.3);">
+  <div style="display:flex; justify-content: space-between; align-items: center;">
+    <div style="text-align:left; font-weight:700; font-size:24px; color:#ffffff;"></div>
+    <div style="flex:1; text-align:center; font-size:28px; font-weight:700; color:#ffffff;">India’s Green E-Waste Revolution</div>
+  </div>
+</header>
+
+
+  <div id="left-panel">
+    <canvas id="yearlyChart"></canvas>
+    <canvas id="categoryChart"></canvas>
+    <canvas id="stackedChart"></canvas>
+  </div>
+  
+  <div id="map"></div>
+  
+  <div id="right-panel">
+    <canvas id="trendChart"></canvas>
+    <canvas id="regionChart"></canvas>
+    <canvas id="radarChart"></canvas>
+    <div id="counter">Total E-Waste Recycled: 0 tons</div>
+  </div>
+
+  <script>
+    // === Map ===
+    const map = L.map('map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const indiaBounds = [
+      [6.5546, 68.1113],
+      [35.6745, 97.3955]
+    ];
+
+    setTimeout(() => {
+      map.flyToBounds(indiaBounds, { padding: [50, 50] });
+    }, 1500);
+
+    const stateData = {
+      "Maharashtra": 120,
+      "Karnataka": 85,
+      "Delhi": 70,
+      "Tamil Nadu": 95,
+      "Gujarat": 100,
+      "West Bengal": 80,
+      "Rajasthan": 65,
+      "Uttar Pradesh": 110,
+      "Kerala": 60,
+      "Madhya Pradesh": 90
+    };
+
+    const coords = {
+      "Maharashtra": [19.7515, 75.7139],
+      "Karnataka": [15.3173, 75.7139],
+      "Delhi": [28.7041, 77.1025],
+      "Tamil Nadu": [11.1271, 78.6569],
+      "Gujarat": [22.2587, 71.1924],
+      "West Bengal": [22.9868, 87.8550],
+      "Rajasthan": [27.0238, 74.2179],
+      "Uttar Pradesh": [26.8467, 80.9462],
+      "Kerala": [10.8505, 76.2711],
+      "Madhya Pradesh": [22.9734, 78.6569]
+    };
+
+    // Different shades of blue for pins
+    const blueShades = ['#3E79D5','#47969A','#85C0C2','#1A5452','#3E79D5','#47969A','#85C0C2','#1A5452','#3E79D5','#47969A'];
+
+    let i = 0;
+    for (const [state, value] of Object.entries(stateData)) {
+      if (coords[state]) {
+        const icon = L.divIcon({
+          className: 'custom-pin',
+          html: `<div style="background:${blueShades[i]}">${value}</div>`,
+          iconSize: [35, 35],
+          iconAnchor: [15, 15]
+        });
+        L.marker(coords[state], { icon }).addTo(map)
+          .bindTooltip(`${state}: ${value} tons recycled`);
+        i++;
+      }
+    }
+
+    // === Chart Options ===
+    const chartOptions = {
+      responsive: true,
+      animation: { duration: 5500, easing: 'easeOutQuart' },
+      plugins: { legend: { labels: { color: '#333333', font: { size: 12 } } } },
+      scales: {
+        x: { ticks: { color: '#333333' }, grid: { color: '#CCCCCC' } },
+        y: { ticks: { color: '#333333' }, grid: { color: '#CCCCCC' } }
+      }
+    };
+
+    // === Charts ===
+    new Chart(document.getElementById('yearlyChart'), {
+      type: 'bar',
+      data: {
+        labels: ['2019','2020','2021','2022','2023','2024'],
+        datasets: [{ label: 'Yearly E-Waste (tons)', data: [120,150,180,210,250,300], backgroundColor: '#3E79D5' }]
+      },
+      options: chartOptions
+    });
+
+    new Chart(document.getElementById('categoryChart'), {
+      type: 'pie',
+      data: {
+        labels: ['Consumer Electronics','IT Equipment','Appliances','Others'],
+        datasets: [{ data: [40,30,20,10], backgroundColor: ['#3E79D5','#47969A','#85C0C2','#1A5452'] }]
+      },
+      options: chartOptions
+    });
+
+    new Chart(document.getElementById('stackedChart'), {
+      type: 'bar',
+      data: {
+        labels: ['North','South','East','West'],
+        datasets: [
+          {label:'Plastic', data:[50,60,40,55], backgroundColor:'#3E79D5'},
+          {label:'Metal', data:[40,50,30,45], backgroundColor:'#47969A'},
+          {label:'Glass', data:[20,30,20,25], backgroundColor:'#85C0C2'}
+        ]
+      },
+      options: { ...chartOptions, scales: { x: { stacked:true, ticks: { color:'#333' }, grid:{color:'#CCCCCC'} }, y:{ stacked:true, ticks:{color:'#333'}, grid:{color:'#CCCCCC'} } } }
+    });
+
+    new Chart(document.getElementById('trendChart'), {
+      type: 'line',
+      data: {
+        labels: ['2019','2020','2021','2022','2023','2024'],
+        datasets: [{
+          label: 'Growth Trend (%)',
+          data: [5,10,15,25,35,45],
+          borderColor: '#3E79D5',
+          backgroundColor: '#85C0C2',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: chartOptions
+    });
+
+    new Chart(document.getElementById('regionChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['North','South','East','West'],
+        datasets: [{ data: [200,250,180,220], backgroundColor: ['#3E79D5','#47969A','#85C0C2','#1A5452'] }]
+      },
+      options: chartOptions
+    });
+
+    new Chart(document.getElementById('radarChart'), {
+      type: 'radar',
+      data: {
+        labels: ['Collection','Processing','Awareness','Policy','Innovation'],
+        datasets: [{ label: 'Performance', data: [70,80,65,60,75], backgroundColor:'rgba(62,121,213,0.3)', borderColor:'#3E79D5' }]
+      },
+      options: chartOptions
+    });
+
+    // === Counter ===
+    let counter = 0;
+    const total = Object.values(stateData).reduce((a,b)=>a+b,0);
+    const interval = setInterval(()=>{
+      if(counter < total){
+        counter += 5;
+        document.getElementById('counter').innerText = `Total E-Waste Recycled: ${counter} tons`;
+      } else clearInterval(interval);
+    },50);
+  </script>
+
+<div id="fadeOverlay"><div>Returning to Home…</div></div>
+<script>
+try{ sessionStorage.setItem('loggedIn','1'); }catch(e){}
+setTimeout(function(){
+  var ov=document.getElementById('fadeOverlay'); if(ov) ov.classList.add('show');
+  setTimeout(function(){ window.location='index.html'; }, 1800);
+}, 10000);
+</script>
+</body>
+</html>
